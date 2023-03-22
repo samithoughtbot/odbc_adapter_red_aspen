@@ -167,10 +167,13 @@ module ActiveRecord
         m.alias_type 'bool', 'boolean'
         m.alias_type 'varbinary', 'binary'
         m.alias_type 'variant', 'json'
-        m.alias_type 'object', 'json'
-        m.alias_type 'array', 'json'
+        m.alias_type 'object', 'string'
+        m.alias_type 'array', 'string'
         m.alias_type 'geography', 'char'
         m.alias_type 'geometry', 'char'
+
+        # number() data types in Snowflake are interpreted as decimal and must be mapped back to a float
+        m.alias_type 'decimal', 'float'
       end
 
       # Translate an exception from the native DBMS to something usable by
