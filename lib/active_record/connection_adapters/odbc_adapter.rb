@@ -92,6 +92,8 @@ module ActiveRecord
         configure_time_options(connection)
         super(connection, logger, config)
         @database_metadata = database_metadata
+
+        connect
       end
 
       # Returns the human-readable name of the adapter.
@@ -118,22 +120,14 @@ module ActiveRecord
       # new connection with the database.
       def reconnect!
         disconnect!
-        odbc_module = @config[:encoding] == 'utf8' ? ODBC_UTF8 : ODBC
-        @connection =
-          if @config.key?(:dsn)
-            odbc_module.connect(@config[:dsn], @config[:username], @config[:password])
-          else
-            odbc_module::Database.new.drvconnect(@config[:driver])
-          end
-        configure_time_options(@connection)
-        super
+        connect
       end
       alias reset! reconnect!
 
       # Disconnects from the database if already connected. Otherwise, this
       # method does nothing.
       def disconnect!
-        @connection.disconnect if @connection.connected?
+        @connection.disconnect if @connection&.connected?
       end
 
       # Build a new column object from the given options. Effectively the same
@@ -198,6 +192,17 @@ module ActiveRecord
       end
 
       private
+
+      def connect
+        odbc_module = @config[:encoding] == 'utf8' ? ODBC_UTF8 : ODBC
+        @connection =
+          if @config.key?(:dsn)
+            odbc_module.connect(@config[:dsn], @config[:username], @config[:password])
+          else
+            odbc_module::Database.new.drvconnect(@config[:driver])
+          end
+        configure_time_options(@connection)
+      end
 
       # Can't use the built-in ActiveRecord map#alias_type because it doesn't
       # work with non-string keys, and in our case the keys are (almost) all
