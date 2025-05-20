@@ -70,6 +70,7 @@ module ODBCAdapter
     def reported_types
       @reported_types ||=
         begin
+          return {} unless adapter.raw_connection&.respond_to?(:types)
           stmt = adapter.raw_connection.types
           stmt.fetch_all
         ensure
